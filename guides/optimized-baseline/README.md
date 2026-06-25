@@ -13,9 +13,9 @@ This guide deploys the recommended out of the box [configuration](https://github
 
 The optimized-baseline defaults to two main routing criteria:
 
-- **Prefix-cache aware** using the [prefix cache scorer](https://github.com/llm-d/llm-d-router/tree/main/pkg/epp/framework/plugins/scheduling/scorer/prefix), which scores candidate endpoints by estimating prompt prefix cache reuse on each model server, complemented by the [`no-hit-lru-scorer`](https://github.com/llm-d/llm-d-router/tree/main/pkg/epp/framework/plugins/scheduling/scorer/nohitlru) that spreads cold requests (zero cache hits) evenly across endpoints to balance the "prefill" workload.
+- **Prefix-cache aware** using the [prefix-cache-affinity-filter](https://github.com/llm-d/llm-d-router/tree/main/pkg/epp/framework/plugins/scheduling/filter/prefixcacheaffinity), which narrows candidate endpoints to cache-warm model servers while using a TTFT load gate to break stickiness when a warm endpoint is predicted to be slower.
 
-- **Load-aware** using both the [kv-cache utilization](https://github.com/llm-d/llm-d-router/tree/main/pkg/epp/framework/plugins/scheduling/scorer/kvcacheutilization) and the [queue size](https://github.com/llm-d/llm-d-router/tree/main/pkg/epp/framework/plugins/scheduling/scorer/queuedepth) scorers.
+- **Load-aware** using the [token-load-scorer](https://github.com/llm-d/llm-d-router/tree/main/pkg/epp/framework/plugins/scheduling/scorer/tokenload), which scores endpoints by their in-flight token load.
 
 ## Configuration
 
@@ -106,9 +106,12 @@ helm install ${GUIDE_NAME} \
 > For **TensorRT-LLM** (`trtllm-serve`), replace the last `-f` flag with the TensorRT-LLM
 > values file: `-f ${REPO_ROOT}/guides/${GUIDE_NAME}/router/${GUIDE_NAME}-trtllm.values.yaml`
 
-To use **agentgateway** as the sidecar proxy instead of Envoy, add the following flags. See [router recipes](../recipes/router/README.md) for full details.
+To use **agentgateway** as the sidecar proxy instead of Envoy, use the dev standalone chart and add the following flags. See [router recipes](../recipes/router/README.md) for full details.
 
 ```bash
+export ROUTER_STANDALONE_CHART=oci://ghcr.io/llm-d/charts/llm-d-router-standalone-dev
+export ROUTER_CHART_VERSION=v0
+
 helm install ${GUIDE_NAME} \
     ${ROUTER_STANDALONE_CHART} \
     -f ${REPO_ROOT}/guides/recipes/router/base.values.yaml \
