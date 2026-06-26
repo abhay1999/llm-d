@@ -109,6 +109,7 @@ helm install ${GUIDE_NAME} \
 To use **agentgateway** as the sidecar proxy instead of Envoy, use the dev standalone chart and add the following flags. See [router recipes](../recipes/router/README.md) for full details.
 
 ```bash
+# TODO: Remove these chart override env vars when v0.10.0 is released.
 export ROUTER_STANDALONE_CHART=oci://ghcr.io/llm-d/charts/llm-d-router-standalone-dev
 export ROUTER_CHART_VERSION=v0
 
